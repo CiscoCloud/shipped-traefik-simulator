@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Server hits - Test</title>
+<style>
+ input[type="number"]{	   
+      width:100%;
+      box-sizing:border-box;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.0.0.min.js"   integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0="   crossorigin="anonymous"></script>
+<script>
+var totalCount, inprgCount
+prepareRequest= function(){
+	return req={
+		URL:"",
+		StatusCode:parseInt($('#txtstatuscode').val()),
+		Delay:parseInt($('#txtdelay').val()),
+		Hits:parseInt($('#txthits').val()),
+	}
+}
+callApi=function(req){
+	$.ajax({
+		url:"hits",
+	 	contentType:"application/json",
+		type:"POST",
+		data:JSON.stringify(req),		
+		success:success,
+		//timeout:req.Delay+200, // add 200 ms to the delay timer
+		error:error,
+		//beforeSend:		 
+		async:true
+	});
+}
+changeStatus = function(){ 
+	inprgCount++
+	updateCurrentStatus()
+} 
+
+updateCurrentStatus=function(){
+	if(inprgCount!=totalCount){
+		$('#btnstart').prop("disabled", true)
+	}else{
+		$('#btnstart').prop("disabled", false)
+	}
+	color=inprgCount!=totalCount?"#F75D59":"#6AFB92"
+	$('#lblstatus').css('background-color', color);
+	testCnt=inprgCount+"/"+totalCount
+	$('#lblstatus').text(function(_, val){
+    	return inprgCount!=totalCount?"  Inprogress "+testCnt :"  Done " +testCnt; 
+	});	
+}
+function success(result,status,xhr){	
+	changeStatus()	  
+	text=xhr.status +' -- '+ status +'  --  '+ result
+	$('#txtresult').val(function(_, val){
+    	return val + text +"\n"; 
+	});	 
+}
+function error(xhr){
+	changeStatus()	 	
+	text=xhr.status +'  --  '+ xhr.statusText +' -- '+ xhr.responseText
+	$('#txtresult').val(function(_, val){
+    	return val + text +"\n"; 
+	});	 
+}
+function start(){
+	$('#txtresult').val("") 
+	req = prepareRequest()
+	totalCount=req.Hits
+	inprgCount=0;
+	
+	updateCurrentStatus()
+	for (i=0;i<req.Hits;i++){ 
+		if(parseInt($('#txtstatuscode').val())==0){
+			req.StatusCode=getRandomStatus()
+		}
+		if(parseInt($('#txtdelay').val())==0){
+			req.Delay=getRandomNum(99)
+		}	 
+		callApi(req) 
+	}	
+}
+getRandomStatus=function(){
+	arr=[200, 300, 404, 500]
+	return arr[getRandomNum(4)]
+}
+// Return 0-Max
+getRandomNum=function(max){	
+	return x =Math.floor(Math.random() * max)
+} 
+$( document ).ready(function() {
+   $( "#txtstatuscode" ).blur(function() {
+	  var regEx = /^[2-5][0-9][0-9]$/
+		if(!regEx.test($( "#txtstatuscode" ).val()) && $( "#txtstatuscode" ).val() != 0)
+		{
+			$("#validCode").show();
+		}
+		else{
+			$("#validCode").hide();
+		}
+	});
+	
+	 $( "#txthits" ).blur(function() {
+	  if($("#txthits").val()>5000 || $("#txthits").val()<1)
+	  {
+		$("#validCounts").show();
+		}
+		else{
+		$("#validCounts").hide();
+			}
+	});
+	
+	$( "#txtdelay" ).blur(function() {
+	  if($("#txtdelay").val()>5000 || $("#txtdelay").val()<0)
+	  {
+		$("#validDelay").show();
+		}
+		else{
+		$("#validDelay").hide();
+			}
+	});
+});
+</script>
+</head>	
+
+
+<body>
+<H2> Server Test </h2>	
+<div>
+<table>
+	
+	<tr>
+	   <td style="width:100px">Hit Counts:</td>
+	   <td style="width:250px"> <input type="number" id="txthits" value=50 ></input><br/><label id="validCounts" style="font-size:small;display:none;color:red">[Min 1 hit and Max 5000] </label> </td>
+	</tr>
+	<tr>
+	   <td style="vertical-align: text-top;">Statuscode:</td>
+	   <td> <input type="number" id="txtstatuscode" value=0 ></input><br/><label style="font-size:small">['0' is for random status code selection] </label><br/><label id="validCode" style="font-size:small;display:none;color:red">[Invalid Status code] </label></td>
+	</tr>
+	
+	<tr>
+	   <td style="vertical-align: text-top;">Delay(ms):</td>
+	   <td> <input type="number" id="txtdelay" value=0 ></input> </input><br/><label style="font-size:small">['0' is for random ms(0-100) selection] </label> <br/><label id="validDelay" style="font-size:small;display:none;color:red">[Min 0 ms - Max 5000 ms] </label></td>
+	</tr>
+	<tr>
+	   <td> </td>
+	   <td> <input type="button" id="btnstart" value="start" onclick="start();"/></td>
+	</tr>
+</table>
+ 
+</div>
+<div>
+<table id="tblForm">
+	<tr>
+	   <td></td>
+	   <td >Status:<label id="lblstatus" ></label></td>
+  	</tr>
+	<tr>
+	   <td></td>
+	   <td><div id="divstatus" style="display:inline"> <textarea id="txtresult" rows="20" cols="100" readonly></textarea></div> </td>
+	</tr>
+	 
+</table>
+ 
+</div>
+</body>
+</html>

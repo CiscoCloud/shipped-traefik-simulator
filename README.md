@@ -20,9 +20,9 @@ Delay(ms)     : Amount of Delay response from to host, Minimum value can be 0 ms
 
 4. Wait for build to complete.
 
-5. Deploy you project to server.
+5. Deploy you project to environment.
 
-6. App Started, Click on **save**. App hit random hits to the same host.
+6. App Started, Click on **start**. 50 hits will be made on App with random status code, as shown below.
 
  ![](img/1.PNG)
 
